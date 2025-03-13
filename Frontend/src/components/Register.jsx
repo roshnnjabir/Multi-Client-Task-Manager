@@ -5,6 +5,7 @@ import axios from "axios";
 const Register = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -21,7 +22,7 @@ const Register = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { email, password, confirmPassword } = userData;
+    const { username, email, password, confirmPassword } = userData;
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -29,10 +30,10 @@ const Register = () => {
     }
 
     try {
-      await axios.post("http://localhost:8000/api/register/", { email, password });
+      await axios.post("http://localhost:8000/api/register/", { username, email, password });
       setSuccess(true);
       setError(""); // Clear error if successful
-      setUserData({ email: "", password: "", confirmPassword: "" });
+      setUserData({ username: "", email: "", password: "", confirmPassword: "" });
       setTimeout(() => navigate("/login"), 2000); // Redirect to login after success
     } catch (error) {
       setError("Registration failed. Please try again.");
@@ -48,6 +49,18 @@ const Register = () => {
         {success && (
           <p className="text-green-500 text-center mb-4">Registration successful! Redirecting to login...</p>
         )}
+        <div className="mb-4">
+          <label className="block text-sm font-semibold" htmlFor="username">Username</label>
+          <input
+            type="username"
+            id="username"
+            name="username"
+            value={userData.username}
+            onChange={handleChange}
+            className="w-full p-2 mt-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
         <div className="mb-4">
           <label className="block text-sm font-semibold" htmlFor="email">Email</label>
           <input
