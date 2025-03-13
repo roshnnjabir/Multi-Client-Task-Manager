@@ -69,7 +69,7 @@ const Dashboard = () => {
       )}
 
       <div className="space-y-4">
-        {tasks.map((task) => (
+        {false && tasks.map((task) => (
           <div
             key={task.id}
             className="bg-gray-100 p-4 rounded-lg shadow-lg flex justify-between items-center"

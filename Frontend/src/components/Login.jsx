@@ -4,7 +4,7 @@ import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({ username: "", email: "", password: "" });
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
 
   // Handle input change
@@ -20,7 +20,7 @@ const Login = () => {
     try {
       const response = await axios.post("http://localhost:8000/api/login/", credentials);
       localStorage.setItem("token", response.data.token); // Store the JWT token
-      navigate("/dashboard"); // Redirect to dashboard after successful login
+      navigate("/"); // Redirect to dashboard after successful login
     } catch (error) {
       setError("Invalid credentials. Please try again.");
       console.error("Login failed:", error);
@@ -39,16 +39,6 @@ const Login = () => {
             id="username"
             name="username"
             value={credentials.username}
-            onChange={handleChange}
-            className="w-full p-2 mt-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-          <label className="block text-sm font-semibold" htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={credentials.email}
             onChange={handleChange}
             className="w-full p-2 mt-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
