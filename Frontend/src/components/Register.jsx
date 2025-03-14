@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
 
 const Register = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -22,18 +23,26 @@ const Register = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { username, email, password, confirmPassword } = userData;
+    const { name, email, password, confirmPassword } = userData;
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      setError("Invalid email format.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
 
     try {
-      await axios.post("http://localhost:8000/api/register/", { username, email, password });
+      await axios.post("http://localhost:8000/api/register/", { name, email, password });
       setSuccess(true);
       setError(""); // Clear error if successful
-      setUserData({ username: "", email: "", password: "", confirmPassword: "" });
+      setUserData({ name: "", email: "", password: "", confirmPassword: "" });
       setTimeout(() => navigate("/login"), 2000); // Redirect to login after success
     } catch (error) {
       setError("Registration failed. Please try again.");
@@ -43,6 +52,7 @@ const Register = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <ToastContainer/>
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-lg w-96">
         <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -50,12 +60,12 @@ const Register = () => {
           <p className="text-green-500 text-center mb-4">Registration successful! Redirecting to login...</p>
         )}
         <div className="mb-4">
-          <label className="block text-sm font-semibold" htmlFor="username">Username</label>
+          <label className="block text-sm font-semibold" htmlFor="name">Name</label>
           <input
-            type="username"
-            id="username"
-            name="username"
-            value={userData.username}
+            type="name"
+            id="name"
+            name="name"
+            value={userData.name}
             onChange={handleChange}
             className="w-full p-2 mt-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             required

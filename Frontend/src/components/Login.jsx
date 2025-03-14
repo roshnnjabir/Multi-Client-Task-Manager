@@ -1,45 +1,61 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import useSound from "use-sound";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [playSuccessSound] = useSound('/sounds/succes.mp3', { volume: 0.5 });
+  const [playErrorSound] = useSound('/sounds/error1.mp3', { volume: 0.5 });
   const [error, setError] = useState("");
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:8000/api/login/", credentials);
+      const response = await axios.post("http://localhost:8000/api/token/", credentials);
       localStorage.setItem("access-token", response.data.access);
       localStorage.setItem("refresh-token", response.data.refresh);
-      navigate("/"); // Redirect to dashboard after successful login
+      setTimeout(() => {
+        navigate("/");
+      }, 2500);
+      const toastId = toast.success("Login Successfull!", { autoClose: 3000 });
+
+      playSuccessSound()
+
+      setTimeout(() => {
+        toast.update(toastId, {
+          render: "Redirecting...",
+          type: "success",
+          autoClose: false,
+        });
+      }, 2000); 
     } catch (error) {
-      setError("Invalid credentials. Please try again.");
+      toast.error("Invalid credentials. Please try again.", {onOpen: playErrorSound, autoClose: 2500});
       console.error("Login failed:", error);
     }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <ToastContainer/>
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-lg w-96">
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="mb-4">
-        <label className="block text-sm font-semibold" htmlFor="username">Username</label>
+        <label className="block text-sm font-semibold" htmlFor="email">Email</label>
           <input
-            type="username"
-            id="username"
-            name="username"
-            value={credentials.username}
+            type="email"
+            id="email"
+            name="email"
+            value={credentials.email}
             onChange={handleChange}
             className="w-full p-2 mt-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             required

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { setTasks, updateTask } from "../slices/taskSlice";
+import { ToastContainer, toast } from 'react-toastify';
 
 const TaskForm = ({ taskToEdit, onCancel }) => {
   const dispatch = useDispatch();
@@ -61,49 +62,52 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow-lg">
-      <h2 className="text-xl font-bold mb-4">
-        {taskToEdit ? "Edit Task" : "Create Task"}
-      </h2>
+    <>
+      <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow-lg">
+        <ToastContainer/>
+        <h2 className="text-xl font-bold mb-4">
+          {taskToEdit ? "Edit Task" : "Create Task"}
+        </h2>
 
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border p-2 w-full mb-2"
-        required
-      />
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="border p-2 w-full mb-2"
+          required
+        />
 
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="border p-2 w-full mb-2"
-      />
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="border p-2 w-full mb-2"
+        />
 
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        className="border p-2 w-full mb-2"
-      >
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-      </select>
-
-      <div className="flex gap-2">
-        <button type="submit" className="bg-green-500 text-white p-2 rounded">
-          {taskToEdit ? "Update" : "Create"}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-gray-500 text-white p-2 rounded"
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="border p-2 w-full mb-2"
         >
-          Cancel
-        </button>
-      </div>
-    </form>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+        </select>
+
+        <div className="flex gap-2">
+          <button type="submit" className="bg-green-500 text-white p-2 rounded">
+            {taskToEdit ? "Update" : "Create"}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="bg-gray-500 text-white p-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </>
   );
 };
 
