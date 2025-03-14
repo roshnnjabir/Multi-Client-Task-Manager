@@ -1,12 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from .models import Task, User
+from rest_framework.exceptions import PermissionDenied
 from .serializers import TaskSerializer, UserSerializer
-import jwt, datetime
-import datetime
+import jwt
+from datetime import datetime, timedelta, timezone
+from django.conf import settings
 
 
 class RegisterView(APIView):
@@ -14,9 +17,13 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
-    
 
+        response_data = serializer.data
+        response_data.pop('password', None)
+
+        return Response(response_data)
+    
+#not using
 class LoginView(APIView):
     def post(self, request):
         email = request.data['email']
@@ -33,11 +40,11 @@ class LoginView(APIView):
         
         payload = {
             "id": user.id,
-            "exp": datetime.datetime.now() + datetime.timedelta(minutes=60),
-            "iat": datetime.datetime.now()
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=60),
+            "iat": datetime.now(timezone.utc)
         }
 
-        token = jwt.encode(payload, 'secret', algorithm='HS256')
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         response = Response()
         response.set_cookie(key='jwt', value=token, httponly=True)
         response.data = {
@@ -56,20 +63,21 @@ class LogoutView(APIView):
         return response
 
 class UserView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        token = request.COOKIES.get('jwt')
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
-        if not token:
-            raise AuthenticationFailed("Unauthenticated!")
-        
-        try:
-            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed("Unauthenticated!")
 
-        user = User.objects.filter(id=payload['id']).first()
+class AdminDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        serializer = UserSerializer(user)
+    def get(self, request):
+        if not request.user.is_staff:
+            raise PermissionDenied("You are not authorized to view this page.")
+
+        users = User.objects.exclude(id=request.user.id)
+        serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
 
@@ -81,15 +89,14 @@ class TaskListCreateView(generics.ListCreateAPIView):
         return Task.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
-        return serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user)
     
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Task.objects.filter(user=self.request.user)
+        return Task.objects.filter(user=self.request.user, pk=self.kwargs['pk'])
     
     def perform_update(self, serializer):
-        instance = self.get_object()
         serializer.save(user=self.request.user)
