@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { addTask } from "../slices/taskSlice";
+import { addTask, updateTask } from "../slices/taskSlice";
 import axios from "axios";
 
 const TaskForm = ({ taskToEdit, onCancel }) => {
@@ -18,19 +18,34 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const { title, description, status } = task;
+    const token = localStorage.getItem("access-token");
+
     try {
-      const response = await axios.post("/api/tasks/", { title, description, status }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      
-      dispatch(addTask(response.data)); // Add new task to Redux state
-      onCancel(); // Close form after submission
+      if (taskToEdit) {
+        // **UPDATE EXISTING TASK**
+        const response = await axios.put(
+          `http://localhost:8000/api/tasks/${taskToEdit.id}/`,
+          { title, description, status },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        dispatch(updateTask(response.data)); // Update Redux store
+      } else {
+        // **CREATE NEW TASK**
+        const response = await axios.post(
+          "http://localhost:8000/api/tasks/",
+          { title, description, status },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        dispatch(addTask(response.data)); // Add new task to Redux store
+      }
+      onCancel(); // Close form
     } catch (error) {
-      console.error("Failed to create task:", error);
+      console.error("Failed to save task:", error);
     }
   };
 
@@ -67,11 +82,7 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
           {taskToEdit ? "Update Task" : "Add Task"}
         </button>
         {taskToEdit && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-red-500 p-2 rounded"
-          >
+          <button type="button" onClick={onCancel} className="text-red-500 p-2 rounded">
             Cancel
           </button>
         )}

@@ -1,109 +1,110 @@
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setTasks, updateTask, deleteTask } from "../slices/taskSlice";
+import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import axios from "axios";
-import TaskForm from "./TaskForm";
+import { setTasks, updateTask } from "../slices/taskSlice";
 
-const Dashboard = () => {
+const TaskForm = ({ taskToEdit, onCancel }) => {
   const dispatch = useDispatch();
-  const tasks = useSelector((state) => state.tasks.tasks);
-  const [editingTask, setEditingTask] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("Pending");
 
-  // Fetch tasks from API
+  // Populate form fields if editing a task
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get("/api/tasks/", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        dispatch(setTasks(response.data));
-      } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-      }
-    };
+    if (taskToEdit) {
+      setTitle(taskToEdit.title);
+      setDescription(taskToEdit.description);
+      setStatus(taskToEdit.status);
+    }
+  }, [taskToEdit]);
 
-    fetchTasks();
-  }, [dispatch]);
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const taskData = { title, description, status };
 
-  // Handle delete task
-  const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/tasks/${id}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      dispatch(deleteTask(id)); // Remove task from Redux state
+      if (taskToEdit) {
+        // **UPDATE TASK (PUT/PATCH request)**
+        const response = await axios.patch(
+          `http://localhost:8000/api/tasks/${taskToEdit.id}/`,
+          taskData,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+            },
+          }
+        );
+
+        // Dispatch action to update Redux state
+        dispatch(updateTask(response.data));
+      } else {
+        // **CREATE NEW TASK**
+        const response = await axios.post(
+          "http://localhost:8000/api/tasks/",
+          taskData,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+            },
+          }
+        );
+
+        // Fetch updated task list
+        dispatch(setTasks(response.data));
+      }
+      
+      onCancel(); // Close form after success
     } catch (error) {
-      console.error("Failed to delete task:", error);
+      console.error("Failed to save task:", error);
     }
   };
 
-  // Handle edit task
-  const handleEdit = (task) => {
-    setEditingTask(task);
-    setShowForm(true);
-  };
-
-  // Cancel task edit
-  const handleCancel = () => {
-    setEditingTask(null);
-    setShowForm(false);
-  };
-
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-3xl font-bold text-center my-6">Task Dashboard</h1>
-      <button
-        onClick={() => setShowForm(true)}
-        className="bg-green-500 text-white p-2 rounded mb-6"
+    <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow-lg">
+      <h2 className="text-xl font-bold mb-4">
+        {taskToEdit ? "Edit Task" : "Create Task"}
+      </h2>
+
+      <input
+        type="text"
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="border p-2 w-full mb-2"
+        required
+      />
+
+      <textarea
+        placeholder="Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="border p-2 w-full mb-2"
+      />
+
+      <select
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+        className="border p-2 w-full mb-2"
       >
-        Add New Task
-      </button>
+        <option value="Pending">Pending</option>
+        <option value="Completed">Completed</option>
+      </select>
 
-      {showForm && (
-        <TaskForm taskToEdit={editingTask} onCancel={handleCancel} />
-      )}
-
-      <div className="space-y-4">
-        {false && tasks.map((task) => (
-          <div
-            key={task.id}
-            className="bg-gray-100 p-4 rounded-lg shadow-lg flex justify-between items-center"
-          >
-            <div>
-              <h3 className="text-xl font-semibold">{task.title}</h3>
-              <p className="text-gray-600">{task.description}</p>
-              <span
-                className={`text-sm p-1 rounded ${
-                  task.status === "Completed" ? "bg-green-200" : "bg-yellow-200"
-                }`}
-              >
-                {task.status}
-              </span>
-            </div>
-            <div>
-              <button
-                onClick={() => handleEdit(task)}
-                className="bg-blue-500 text-white p-2 rounded mr-2"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(task.id)}
-                className="bg-red-500 text-white p-2 rounded"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="flex gap-2">
+        <button type="submit" className="bg-green-500 text-white p-2 rounded">
+          {taskToEdit ? "Update" : "Create"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="bg-gray-500 text-white p-2 rounded"
+        >
+          Cancel
+        </button>
       </div>
-    </div>
+    </form>
   );
 };
 
-export default Dashboard;
+export default TaskForm;

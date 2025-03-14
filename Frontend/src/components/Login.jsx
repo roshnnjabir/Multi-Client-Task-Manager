@@ -19,7 +19,8 @@ const Login = () => {
 
     try {
       const response = await axios.post("http://localhost:8000/api/login/", credentials);
-      localStorage.setItem("token", response.data.token); // Store the JWT token
+      localStorage.setItem("access-token", response.data.access);
+      localStorage.setItem("refresh-token", response.data.refresh);
       navigate("/"); // Redirect to dashboard after successful login
     } catch (error) {
       setError("Invalid credentials. Please try again.");
