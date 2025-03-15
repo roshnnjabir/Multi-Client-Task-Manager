@@ -23,7 +23,6 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
 
     try {
       if (taskToEdit) {
-        // **UPDATE EXISTING TASK**
         const response = await axios.put(
           `http://localhost:8000/api/tasks/${taskToEdit.id}/`,
           { title, description, status },
@@ -31,9 +30,8 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        dispatch(updateTask(response.data)); // Update Redux store
+        dispatch(updateTask(response.data));
       } else {
-        // **CREATE NEW TASK**
         const response = await axios.post(
           "http://localhost:8000/api/tasks/",
           { title, description, status },
@@ -41,9 +39,9 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        dispatch(addTask(response.data)); // Add new task to Redux store
+        dispatch(addTask(response.data));
       }
-      onCancel(); // Close form
+      onCancel();
     } catch (error) {
       console.error("Failed to save task:", error);
     }

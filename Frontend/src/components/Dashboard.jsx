@@ -1,16 +1,28 @@
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import useSound from "use-sound";
 import axios from "axios";
 import { setTasks, updateTask } from "../slices/taskSlice";
 import { ToastContainer, toast } from 'react-toastify';
+import Header from "./Header";
+import { useNavigate } from "react-router-dom";
 
 const TaskForm = ({ taskToEdit, onCancel }) => {
+  const auth = useSelector((state) => state.auth);
+
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Pending");
+  const [playErrorSound] = useSound('/sounds/error1.mp3')
 
-  // Populate form fields if editing a task
+  useEffect(() => {
+    if (!auth.isAuthenticated) {
+      toast.error("Please Login before moving forward!", {onOpen:() => playErrorSound(), onClose: () => navigate("/login", { replace: true }), autoClose:1500});
+    }
+  }, [auth.isAuthenticated, navigate])
+
   useEffect(() => {
     if (taskToEdit) {
       setTitle(taskToEdit.title);
@@ -19,14 +31,12 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
     }
   }, [taskToEdit]);
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const taskData = { title, description, status };
 
     try {
       if (taskToEdit) {
-        // **UPDATE TASK (PUT/PATCH request)**
         const response = await axios.patch(
           `http://localhost:8000/api/tasks/${taskToEdit.id}/`,
           taskData,
@@ -37,10 +47,8 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
           }
         );
 
-        // Dispatch action to update Redux state
         dispatch(updateTask(response.data));
       } else {
-        // **CREATE NEW TASK**
         const response = await axios.post(
           "http://localhost:8000/api/tasks/",
           taskData,
@@ -51,18 +59,27 @@ const TaskForm = ({ taskToEdit, onCancel }) => {
           }
         );
 
-        // Fetch updated task list
         dispatch(setTasks(response.data));
       }
       
-      onCancel(); // Close form after success
+      onCancel();
     } catch (error) {
       console.error("Failed to save task:", error);
     }
   };
 
+  if (!auth.user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <ToastContainer/>
+        <p className="text-xl text-gray-600">No user logged in</p>
+      </div>
+    );
+  }
+
   return (
     <>
+      <Header />
       <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow-lg">
         <ToastContainer/>
         <h2 className="text-xl font-bold mb-4">
