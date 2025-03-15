@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <!-- Font Awesome Icons for the icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 50px;
+        }
+        .icon-box {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            width: 150px;
+            transition: transform 0.3s;
+        }
+        .icon-box:hover {
+            transform: translateY(-10px);
+        }
+        .icon-box i {
+            font-size: 40px;
+            color: #007BFF;
+        }
+        .icon-box a {
+            display: block;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .icon-box a:hover {
+            color: #007BFF;
+        }
+        h1 {
+            color: #333;
+            margin-top: 50px;
+            margin-bottom: 20px;
+        }
+        hr {
+            width: 80%;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Available API Endpoints</h1>
+    <hr> <!-- Horizontal line added here -->
+
+    <div class="container">
+        <!-- Register -->
+        <div class="icon-box">
+            <i class="fas fa-user-plus"></i>
+            <a href="{% url 'register' %}">Register</a>
+        </div>
+
+        <!-- Profile -->
+        <div class="icon-box">
+            <i class="fas fa-user-circle"></i>
+            <a href="{% url 'user_profile' %}">Profile</a>
+        </div>
+
+        <!-- Upload Profile Image -->
+        <div class="icon-box">
+            <i class="fas fa-image"></i>
+            <a href="{% url 'user_profile' %}">Upload Image</a>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div class="icon-box">
+            <i class="fas fa-tachometer-alt"></i>
+            <a href="{% url 'admindashboard' %}">Admin Dashboard</a>
+        </div>
+
+        <!-- Logout -->
+        <div class="icon-box">
+            <i class="fas fa-sign-out-alt"></i>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+
+        <!-- Tasks -->
+        <div class="icon-box">
+            <i class="fas fa-tasks"></i>
+            <a href="{% url 'tasks' %}">Tasks</a>
+        </div>
+
+        <!-- Token -->
+        <div class="icon-box">
+            <i class="fas fa-key"></i>
+            <a href="{% url 'token_obtain_pair' %}">Get Token</a>
+        </div>
+
+        <!-- Token Refresh -->
+        <div class="icon-box">
+            <i class="fas fa-sync-alt"></i>
+            <a href="{% url 'token_refresh' %}">Refresh Token</a>
+        </div>
+    </div>
+
+</body>
+</html>

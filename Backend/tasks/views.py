@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -9,8 +10,11 @@ from rest_framework.exceptions import PermissionDenied
 from .serializers import TaskSerializer, UserSerializer
 import jwt
 from datetime import datetime, timedelta, timezone
-from django.conf import settings
+from backend import settings
+import os
 
+def LandingPage(request):
+    return render(request, 'index.html')
 
 class RegisterView(APIView):
     def post(self, request):
@@ -67,6 +71,34 @@ class UserView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+    
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def Upload_profile_image(request):
+    user = request.user
+
+    if "profile_image" not in request.FILES:
+        print("Error: No Image Provided")
+        return Response({"error": "No image provided"}, status=400)
+
+    image = request.FILES["profile_image"]
+
+    if not image.name.lower().endswith(('jpg', 'jpeg', 'png')):
+        return Response({"error": "Invalid image format. Only JPG, JPEG, PNG are allowed."}, status=400)
+
+    image_directory = os.path.join(settings.MEDIA_ROOT, "profile_images")
+    os.makedirs(image_directory, exist_ok=True)
+
+    file_path = os.path.join(image_directory, f"{user.id}_{image.name}")
+
+    with open(file_path, "wb+") as destination:
+        for chunk in image.chunks():
+            destination.write(chunk)
+
+    user.profile_image = f"/profile_images/{user.id}_{image.name}"
+    user.save()
+
+    return Response({"profile_image": f"{settings.MEDIA_URL}{user.profile_image}"}, status=200)
 
 
 class AdminDashboardView(APIView):
