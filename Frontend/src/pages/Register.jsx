@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
-import Header from "./Header";
+import Header from "../components/Header";
 import { useSelector } from "react-redux";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 

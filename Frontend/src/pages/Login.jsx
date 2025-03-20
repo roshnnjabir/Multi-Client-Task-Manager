@@ -6,7 +6,7 @@ import useSound from "use-sound";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../slices/authSlice";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import Header from "./Header";
+import Header from "../components/Header";
 
 const Login = () => {
   const navigate = useNavigate();
