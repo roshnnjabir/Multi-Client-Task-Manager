@@ -1,12 +1,14 @@
 import { useSelector, useDispatch } from "react-redux";
 import { logout, updateUserProfile } from "../slices/authSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import useSound from "use-sound";
 import { toast, ToastContainer } from "react-toastify";
+import { ArrowLeft } from "lucide-react";
 
 const ProfilePage = () => {
   const { user, token, isAuthenticated } = useSelector((state) => state.auth);
+  const location = useLocation();
   const navigate = useNavigate();
   const [playSuccessSound] = useSound("/sounds/completed.mp3", { volume: 0.5 });
   const [playErrorSound] = useSound("/sounds/error1.mp3", { volume: 0.5 });
@@ -25,9 +27,17 @@ const ProfilePage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [confirmImageChange, setConfirmImageChange] = useState(null);
+  const message = location.state?.message;
+
+  useEffect(() => {
+    if(message){
+      toast.info(message, {onOpen:() =>playErrorSound()})
+    }
+  }, [navigate])
 
   const handleLogout = () => {
     dispatch(logout());
+    window.location.reload();
     navigate("/login");
   };
 
@@ -76,7 +86,7 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <ToastContainer/>
+        <ToastContainer limit={1}/>
         <p className="text-xl text-gray-600">No user logged in</p>
       </div>
     );
@@ -84,30 +94,49 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <ToastContainer/>
-      <div className="bg-white p-6 rounded-lg shadow-md w-80 text-center flex flex-col justify-between h-[400px]">
-        <div>
-          <div className="w-24 h-24 rounded-full mx-auto border-4 border-gray-300 overflow-hidden">
+      <ToastContainer limit={2}/>
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-6 left-6 flex items-center gap-2 text-gray-700 hover:text-gray-900 transition"
+      >
+        <ArrowLeft size={22} /> <span className="font-semibold">Back</span>
+      </button>
+
+      <div className="bg-white p-6 rounded-lg shadow-xl w-80 text-center flex flex-col justify-between h-[420px]">
+        <div className="user-profile">
+          <div className="profile-image-wrapper w-24 h-24 mb-10 rounded-full mx-auto border-4 border-gray-300 overflow-hidden">
             <img
-              src={user.profile_image ? `${API_BASE_URL}${user.profile_image}` : "https://i.pravatar.cc/150?img=2"}
+              src={
+                user.profile_image 
+                  ? `${API_BASE_URL}${user.profile_image}` 
+                  : "https://i.pravatar.cc/150?img=2"
+              }
               alt="Profile"
               className="w-full h-full object-cover"
             />
           </div>
-  
-          <h2 className="text-xl font-semibold mt-4">{user.name}</h2>
-          <p className="text-gray-600">{user.email}</p>
+            
+          <div className="user-info space-y-4">
+            <div className="info-row flex justify-between text-black font-semibold">
+              <span>Name:</span>
+              <span className="font-normal">{user.name}</span>
+            </div>
+            <div className="info-row flex justify-between text-black font-semibold">
+              <span>Email:</span>
+              <span className="font-normal">{user.email}</span>
+            </div>
+          </div>
         </div>
 
         <div className="mt-auto">
           {confirmImageChange === null ? (
-            <div className="pt-5">
+            <div className="pt-5 text-gray-700">
               Change Profile Image? 
-              <button className="p-2 font-semibold cursor-pointer hover:underline" onClick={() => setConfirmImageChange(true)}>Yes</button>
-              <button className="p-2 font-semibold cursor-pointer hover:underline" onClick={() => setConfirmImageChange(false)}>No</button>
+              <button className="p-2 font-semibold cursor-pointer hover:underline text-blue-600" onClick={() => setConfirmImageChange(true)}>Yes</button>
+              <button className="p-2 font-semibold cursor-pointer hover:underline text-red-600" onClick={() => setConfirmImageChange(false)}>No</button>
             </div>
           ) : null}
-  
+
           {confirmImageChange && (
             <div className="flex flex-col items-start mt-4 p-3 bg-gray-100 rounded-lg">
               <p className="font-semibold mb-2">Change Image Here:</p>
@@ -124,18 +153,16 @@ const ProfilePage = () => {
               {isUploading && <p className="text-blue-500 mt-2">Uploading...</p>}
             </div>
           )}
-  
-          {isUploading && <p className="text-blue-500 mt-2">Uploading...</p>}
-  
+
           <button
             onClick={handleLogout}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition w-full"
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition w-full shadow-md"
           >
             Logout
           </button>
         </div>
       </div>
-  
+
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-500 bg-opacity-80">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 text-center">

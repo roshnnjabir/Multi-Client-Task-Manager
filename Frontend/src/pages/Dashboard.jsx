@@ -1,131 +1,95 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useSound from "use-sound";
-import axios from "axios";
-import { setTasks, updateTask } from "../slices/taskSlice";
 import { ToastContainer, toast } from 'react-toastify';
-import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
+import { fetchTasks, removeTask } from "../slices/taskSlice";
+import TaskForm from "../components/TaskForm";
+import Header from "../components/Header";
 
-const TaskForm = ({ taskToEdit, onCancel }) => {
+const Dashboard = () => {
   const auth = useSelector((state) => state.auth);
-
+  const { tasks, loading, error } = useSelector((state) => state.tasks);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("Pending");
-  const [playErrorSound] = useSound('/sounds/error1.mp3')
+  const [taskToEdit, setTaskToEdit] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [playErrorSound] = useSound('/sounds/error1.mp3');
 
   useEffect(() => {
     if (!auth.isAuthenticated) {
-      toast.error("Please Login before moving forward!", {onOpen:() => playErrorSound(), onClose: () => navigate("/login", { replace: true }), autoClose:1500});
+      toast.error("Please Login before moving forward!", {
+        onOpen: playErrorSound,
+        onClose: () => navigate("/login", { replace: true }),
+        autoClose: 1500
+      });
+    } else {
+      dispatch(fetchTasks());
     }
-  }, [auth.isAuthenticated, navigate])
+  }, [auth.isAuthenticated, dispatch, navigate]);
 
-  useEffect(() => {
-    if (taskToEdit) {
-      setTitle(taskToEdit.title);
-      setDescription(taskToEdit.description);
-      setStatus(taskToEdit.status);
-    }
-  }, [taskToEdit]);
+  const handleAddTask = () => {
+    setTaskToEdit(null);
+    setIsFormOpen(true);
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const taskData = { title, description, status };
+  const handleEditTask = (task) => {
+    setTaskToEdit(task);
+    setIsFormOpen(true);
+  };
 
-    try {
-      if (taskToEdit) {
-        const response = await axios.patch(
-          `http://localhost:8000/api/tasks/${taskToEdit.id}/`,
-          taskData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
-            },
-          }
-        );
-
-        dispatch(updateTask(response.data));
-      } else {
-        const response = await axios.post(
-          "http://localhost:8000/api/tasks/",
-          taskData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access-token")}`,
-            },
-          }
-        );
-
-        dispatch(setTasks(response.data));
-      }
-      
-      onCancel();
-    } catch (error) {
-      console.error("Failed to save task:", error);
+  const handleDeleteTask = (taskId) => {
+    const confirmed = window.confirm("Are you sure you want to delete this task?");
+    if (confirmed) {
+      dispatch(removeTask(taskId));
     }
   };
 
-  if (!auth.user) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <ToastContainer/>
-        <p className="text-xl text-gray-600">No user logged in</p>
-      </div>
-    );
-  }
+  const handleCancel = () => {
+    setIsFormOpen(false);
+    setTaskToEdit(null);
+  };
 
   return (
     <>
       <Header />
-      <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow-lg">
-        <ToastContainer/>
-        <h2 className="text-xl font-bold mb-4">
-          {taskToEdit ? "Edit Task" : "Create Task"}
-        </h2>
-
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="border p-2 w-full mb-2"
-          required
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="border p-2 w-full mb-2"
-        />
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border p-2 w-full mb-2"
-        >
-          <option value="Pending">Pending</option>
-          <option value="Completed">Completed</option>
-        </select>
-
-        <div className="flex gap-2">
-          <button type="submit" className="bg-green-500 text-white p-2 rounded">
-            {taskToEdit ? "Update" : "Create"}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="bg-gray-500 text-white p-2 rounded"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+      <div className="p-8 bg-gradient-to-r from-blue-50 to-green-50 min-h-screen">
+        <ToastContainer />
+        {isFormOpen && <TaskForm taskToEdit={taskToEdit} onCancel={handleCancel} />}
+        <button onClick={handleAddTask} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-xl transition duration-300 mb-8">Add Task</button>
+        {loading ? (
+          <p className="text-gray-600 text-xl font-medium">Loading tasks...</p>
+        ) : error ? (
+          <p className="text-red-500 font-semibold text-lg">{error}</p>
+        ) : tasks.length === 0 ?  (
+          <p className="text-gray-600 text-xl font-medium">No tasks available</p>
+        ) : (
+          <div className="bg-white p-6 rounded-2xl shadow-xl">
+            <h3 className="text-2xl font-semibold mb-6 text-gray-800">Your Tasks:</h3>
+            <div className="space-y-6">
+              {tasks.map((task) => (
+                <div key={task.id} className="flex justify-between items-center p-5 border border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition duration-300">
+                  <div className="flex flex-col space-y-2">
+                    <p className="text-gray-900 text-xl font-semibold">{task.title}</p>
+                    <p className="text-gray-700 text-base">{task.description}</p>
+                    <p
+                      className={`text-sm font-medium ${task.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}`}
+                    >
+                      {task.status}
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <button onClick={() => handleEditTask(task)} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition duration-300">Edit</button>
+                    <button onClick={() => handleDeleteTask(task.id)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-md transition duration-300">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 };
 
-export default TaskForm;
+export default Dashboard;
