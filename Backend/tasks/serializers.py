@@ -4,7 +4,7 @@ from .models import Task, User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','name', 'email', 'password', 'profile_image']
+        fields = ['id','name', 'email', 'password', 'is_staff', 'profile_image']
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):

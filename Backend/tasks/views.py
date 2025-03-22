@@ -4,6 +4,8 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 from .models import Task, User
 from rest_framework.exceptions import PermissionDenied
@@ -16,6 +18,24 @@ import os
 def LandingPage(request):
     return render(request, 'index.html')
 
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        
+        refresh_token = response.data.get('refresh')
+        
+        response.set_cookie(
+            'refresh_token',
+            refresh_token,
+            max_age=60 * 60 * 24 * 7,
+            httponly=True,
+            secure=True,
+            samesite='Strict',
+        )
+        
+        return response
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -26,51 +46,15 @@ class RegisterView(APIView):
         response_data.pop('password', None)
 
         return Response(response_data)
-    
-#not using
-class LoginView(APIView):
-    def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
 
-        user = User.objects.filter(email=email).first()
-        
-
-        if user is None:
-            raise AuthenticationFailed("User not found")
-        
-        if not user.check_password(password):
-            raise AuthenticationFailed("Inncorrect Password!")
-        
-        payload = {
-            "id": user.id,
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=60),
-            "iat": datetime.now(timezone.utc)
-        }
-
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.data = {
-            'jwt': token
-        }
-        return response
-
-
-class LogoutView(APIView):
-    def post(self, request):
-        response = Response()
-        response.delete_cookie(key='jwt')
-        response.data = {
-            "message": "Success"
-        }
-        return response
 
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
     
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -122,7 +106,8 @@ class TaskListCreateView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    
+
+
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
