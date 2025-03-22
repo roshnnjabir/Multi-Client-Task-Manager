@@ -41,7 +41,7 @@ const Header = () => {
 
           <div className="w-10 h-10 rounded-full border-2 border-white overflow-hidden">
             <img
-              src={API_BASE_URL+user.profile_image || "https://i.pravatar.cc/150?img=2"}
+              src={user.profile_image ? `${API_BASE_URL}${user.profile_image}` : "https://i.pravatar.cc/150?img=2"}
               alt="Profile"
               className="w-full h-full object-cover"
             />

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import useSound from "use-sound";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../slices/authSlice";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Header from "../components/Header";
+import api from "../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !credentials.email) {
       toast.info("You are already logged in. Redirecting to your profile...", {
         autoClose: 3000,
         pauseOnHover: false,
@@ -38,10 +38,12 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:8000/api/token/", credentials);
+      const response = await api.post("http://localhost:8000/api/token/", credentials);
       const { access, refresh } = response.data;
+      console.log("Access: ", access);
+      console.log(" Refresh: ", refresh);
 
-      const userResponse = await axios.get("http://localhost:8000/api/profile/", {
+      const userResponse = await api.get("http://localhost:8000/api/profile/", {
         headers: { Authorization: `Bearer ${access}` },
       });
 
@@ -51,7 +53,7 @@ const Login = () => {
       localStorage.setItem("refresh-token", refresh);
       localStorage.setItem("user", JSON.stringify(user));
 
-      dispatch(setUser({ token: access, user, isAuthenticated: true }));
+      dispatch(setUser({ token: access, refreshToken: refresh, user, isAuthenticated: true }));
 
       const toastId = toast.success("Login Successful! Redirecting to Dashboard...", { autoClose: 3000 });
       playSuccessSound();
@@ -74,8 +76,8 @@ const Login = () => {
   return (
     <>
       <Header />
+      <ToastContainer />
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <ToastContainer />
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-lg w-96">
           <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}

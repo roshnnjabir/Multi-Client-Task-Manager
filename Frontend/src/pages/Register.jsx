@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import Header from "../components/Header";
 import { useSelector } from "react-redux";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
+import api from "../services/authService";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post("http://localhost:8000/api/register/", {
+      await api.post("http://localhost:8000/api/register/", {
         name: userData.name,
         email: userData.email,
         password: userData.password,

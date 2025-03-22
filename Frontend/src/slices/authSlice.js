@@ -18,13 +18,12 @@ const authSlice = createSlice({
       state.token = token;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
-
-      localStorage.setItem("access-token", token);
-      localStorage.setItem("refresh-token", refreshToken);
-      localStorage.setItem("user", JSON.stringify(user));
     },
     logout: (state) => {
-      Object.assign(state, initialState);
+      state.user = null;
+      state.token = null;
+      state.refreshToken = null;
+      state.isAuthenticated = false;
 
       localStorage.removeItem("access-token");
       localStorage.removeItem("refresh-token");
