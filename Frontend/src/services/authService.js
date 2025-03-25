@@ -17,21 +17,17 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      console.log("Retriying Original Request")
-      
+      originalRequest._retry = true;      
       
 
       try {
-        const refreshToken = localStorage.getItem("refresh-token");
-        if (!refreshToken) throw new Error("No refresh token found");
-
-        const refreshResponse = await axios.post(`${API_BASE_URL}/token/refresh/`, {
-          refresh: refreshToken,
+        const response = await axios.post(`${API_BASE_URL}/token/refresh/`, null, { 
+          withCredentials: true 
         });
 
-        const newAccessToken = refreshResponse.data.access;
+        const newAccessToken = response.data.access;
 
+        localStorage.setItem("access-token", newAccessToken);
         store.dispatch(setUser({ token: newAccessToken, user: store.getState().auth.user, isAuthenticated: true }));
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -39,7 +35,6 @@ api.interceptors.response.use(
       } catch (refreshError) {
         store.dispatch(logout());
         toast.error("Session expired. Please log in again.");
-        localStorage.setItem("access-token", newAccessToken);
         const navigate = useNavigate();
         navigate('/login');
         return Promise.reject(refreshError);

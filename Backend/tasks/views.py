@@ -1,17 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView
 from .models import Task, User
 from rest_framework.exceptions import PermissionDenied
 from .serializers import TaskSerializer, UserSerializer
-import jwt
-from datetime import datetime, timedelta, timezone
 from backend import settings
 import os
 
@@ -23,7 +20,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         
-        refresh_token = response.data.get('refresh')
+        refresh_token = response.data.pop('refresh')
         
         response.set_cookie(
             'refresh_token',
@@ -35,6 +32,29 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         )
         
         return response
+    
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get("refresh_token")
+        print("Cookies Found", refresh_token)
+
+        if not refresh_token:
+            return Response({"error": "No refresh token found"}, status=400)
+        
+        request.data._mutable = True
+        
+        request.data["refresh"] = refresh_token
+
+        return super().post(request, *args, **kwargs)
+
+
+class LogoutView(APIView):
+    def post(self, request):
+        response = Response({"message": "Logged out"})
+        response.delete_cookie("refresh_token")
+        return response
+
 
 class RegisterView(APIView):
     def post(self, request):

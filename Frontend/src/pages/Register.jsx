@@ -103,7 +103,7 @@ const Register = () => {
     }
 
     try {
-      await api.post("http://localhost:8000/api/register/", {
+      await api.post("/register/", {
         name: userData.name,
         email: userData.email,
         password: userData.password,

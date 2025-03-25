@@ -37,7 +37,6 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    window.location.reload();
     navigate("/login");
   };
 

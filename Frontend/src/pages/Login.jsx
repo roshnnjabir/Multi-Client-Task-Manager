@@ -8,6 +8,8 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Header from "../components/Header";
 import api from "../services/authService";
 
+const API_URL = "http://localhost:8000/api"
+
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -38,22 +40,23 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const response = await api.post("http://localhost:8000/api/token/", credentials);
+      const response = await api.post("/token/", credentials, {
+        withCredentials: true,
+      });
       const { access, refresh } = response.data;
 
-      const userResponse = await api.get("http://localhost:8000/api/profile/", {
+      const userResponse = await api.get("/profile/", {
         headers: { Authorization: `Bearer ${access}` },
       });
 
       const user = userResponse.data;
 
       localStorage.setItem("access-token", access);
-      localStorage.setItem("refresh-token", refresh);
       localStorage.setItem("user", JSON.stringify(user));
 
       dispatch(setUser({ token: access, refreshToken: refresh, user, isAuthenticated: true }));
 
-      const toastId = toast.success("Login Successful! Redirecting to Dashboard...", { autoClose: 3000 });
+      const toastId = toast.success("Login Successful! Redirecting to Dashboard...", { autoClose: 3000, pauseOnHover: false });
       playSuccessSound();
 
       setTimeout(() => {
