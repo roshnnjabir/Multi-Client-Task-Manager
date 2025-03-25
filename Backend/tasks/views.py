@@ -97,6 +97,16 @@ class AdminDashboardView(APIView):
         return Response(serializer.data)
 
 
+class AdminUserTaskDetailView(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id') 
+        if self.request.user.is_staff and user_id:
+            return Task.objects.filter(user__id=user_id)
+
+
 class TaskListCreateView(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]

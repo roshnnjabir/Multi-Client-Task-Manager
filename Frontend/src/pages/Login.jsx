@@ -40,8 +40,6 @@ const Login = () => {
     try {
       const response = await api.post("http://localhost:8000/api/token/", credentials);
       const { access, refresh } = response.data;
-      console.log("Access: ", access);
-      console.log(" Refresh: ", refresh);
 
       const userResponse = await api.get("http://localhost:8000/api/profile/", {
         headers: { Authorization: `Bearer ${access}` },

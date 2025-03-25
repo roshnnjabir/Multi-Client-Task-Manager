@@ -41,7 +41,7 @@ class Task(models.Model):
         ('completed', 'Completed'),
     )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, db_index=True)  # Use AUTH_USER_MODEL
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, db_index=True, related_name='tasks')
     title = models.CharField(max_length=200, unique=True)
     description = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
