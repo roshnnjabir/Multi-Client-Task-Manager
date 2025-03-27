@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import Header from "../components/Header";
-import api from "../services/authService";
+import Header from "../../components/Header";
+import api from "../../services/authService";
+import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -58,6 +59,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentUsers.length > 0 ? (
           currentUsers.map((user) => (
+          <Link to={`/admin/userTasks/${user.id}`} key={user.id}>
             <div
               key={user.id}
               className="flex items-center space-x-4 bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition-transform transform hover:scale-105"
@@ -81,6 +83,7 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </div>
+          </Link>
           ))
         ) : (
           <p className="text-gray-500">No users found.</p>

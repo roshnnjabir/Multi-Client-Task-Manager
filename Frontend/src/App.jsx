@@ -5,7 +5,8 @@ import ProtectedRoute from "../protectedRoutes/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/Profile";
 import ProtectedAdminRoute from "../protectedRoutes/ProtectedAdminRoutes";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUserTaskView from "./pages/admin/AdminUserTaskView";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -20,7 +21,9 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route element={<ProtectedAdminRoute />}>
-            <Route path="/admindashboard" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/userTasks/:id" element={<AdminUserTaskView />} />
           </Route>
         </Route>
 
