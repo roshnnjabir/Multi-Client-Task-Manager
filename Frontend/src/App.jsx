@@ -8,6 +8,7 @@ import ProtectedAdminRoute from "../protectedRoutes/ProtectedAdminRoutes";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUserTaskView from "./pages/admin/AdminUserTaskView";
 import NotFound from "./pages/NotFound";
+import Chat from "./components/Chat";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/chat" element={<Chat />} />
           <Route element={<ProtectedAdminRoute />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin" element={<AdminDashboard />} />
