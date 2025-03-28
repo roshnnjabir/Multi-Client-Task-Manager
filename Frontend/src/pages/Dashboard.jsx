@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { fetchTasks, removeTask } from "../slices/taskSlice";
 import TaskForm from "../components/TaskForm";
 import Header from "../components/Header";
+import Chat from "../components/Chat";
+import { MessageCircle } from "lucide-react"; 
 
 const Dashboard = () => {
   const auth = useSelector((state) => state.auth);
@@ -15,6 +17,7 @@ const Dashboard = () => {
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [playErrorSound] = useSound('/sounds/error1.mp3');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     if (!auth.isAuthenticated) {
@@ -39,8 +42,7 @@ const Dashboard = () => {
   };
 
   const handleDeleteTask = (taskId) => {
-    const confirmed = window.confirm("Are you sure you want to delete this task?");
-    if (confirmed) {
+    if (window.confirm("Are you sure you want to delete this task?")) {
       dispatch(removeTask(taskId));
     }
   };
@@ -61,7 +63,7 @@ const Dashboard = () => {
           <p className="text-gray-600 text-xl font-medium">Loading tasks...</p>
         ) : error ? (
           <p className="text-red-500 font-semibold text-lg">{error}</p>
-        ) : tasks.length === 0 ?  (
+        ) : tasks.length === 0 ? (
           <p className="text-gray-600 text-xl font-medium">No tasks available</p>
         ) : (
           <div className="bg-white p-6 rounded-2xl shadow-xl">
@@ -72,9 +74,7 @@ const Dashboard = () => {
                   <div className="flex flex-col space-y-2">
                     <p className="text-gray-900 text-xl font-semibold">{task.title}</p>
                     <p className="text-gray-700 text-base">{task.description}</p>
-                    <p
-                      className={`text-sm font-medium ${task.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}`}
-                    >
+                    <p className={`text-sm font-medium ${task.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}`}>
                       {task.status}
                     </p>
                   </div>
@@ -88,6 +88,12 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <button onClick={() => setIsChatOpen(!isChatOpen)} className="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition">
+        <MessageCircle size={24} />
+      </button>
+
+      <Chat isOpen={isChatOpen} toggleChat={() => setIsChatOpen(!isChatOpen)} />
     </>
   );
 };
