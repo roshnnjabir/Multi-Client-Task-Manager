@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { X } from "lucide-react";
+import dayjs from "dayjs";
 
 const Chat = ({ isOpen, toggleChat }) => {
     const [messages, setMessages] = useState([]);
@@ -36,6 +37,13 @@ const Chat = ({ isOpen, toggleChat }) => {
         }
     };
 
+    const groupedMessages = messages.reduce((acc, msg) => {
+        const date = dayjs(msg.timestamp).format("YYYY-MM-DD");
+        if (!acc[date]) acc[date] = [];
+        acc[date].push(msg);
+        return acc;
+    }, {});
+
     return (
         <div className={`fixed bottom-16 right-6 w-80 bg-white shadow-lg rounded-lg border transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"} p-4`}>
             <div className="flex justify-between items-center border-b pb-2">
@@ -44,11 +52,18 @@ const Chat = ({ isOpen, toggleChat }) => {
                     <X size={20} />
                 </button>
             </div>
-            <div className="h-64 overflow-y-auto p-2 space-y-2">
-                {messages.map((msg, index) => (
-                    <p key={index} className="text-sm bg-gray-100 p-2 rounded-md">
-                        <strong>{msg.sender}:</strong> {msg.message}
-                    </p>
+            <div className="h-64 overflow-y-auto p-2 space-y-4">
+                {Object.entries(groupedMessages).map(([date, msgs]) => (
+                    <div key={date}>
+                        <p className="text-center text-gray-500 text-sm font-semibold mb-2">{dayjs(date).format("MMMM D, YYYY")}</p>
+                        {msgs.map((msg, index) => (
+                            <p key={index} className="text-sm bg-gray-100 p-2 rounded-md">
+                                <strong>{msg.sender}:</strong> {msg.message}
+                                <br />
+                                <span className="text-xs text-gray-500">{dayjs(msg.timestamp).format("hh:mm A")}</span>
+                            </p>
+                        ))}
+                    </div>
                 ))}
             </div>
             <div className="mt-2 flex">

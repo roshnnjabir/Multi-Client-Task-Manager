@@ -1,4 +1,5 @@
 import json
+import datetime
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -7,7 +8,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = "general"
         self.room_group_name = f"chat_{self.room_name}"
 
-        # Add user to the chat room
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -32,7 +32,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data["message"]
         sender = data["sender"]
         is_staff = data["is_staff"]
-        self.chat_history.append({"sender": sender, "message": message})
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+        self.chat_history.append({"sender": sender, "message": message, "timestamp": timestamp})
 
         if len(self.chat_history) > 10:
             self.chat_history.pop(0)
@@ -45,6 +46,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "chat_message",
                 "message": message,
                 "sender": sender_name,
+                "timestamp": timestamp
             }
         )
 
@@ -54,5 +56,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """
         await self.send(text_data=json.dumps({
             "message": event["message"],
-            "sender": event["sender"]
+            "sender": event["sender"],
+            "timestamp": event["timestamp"]
         }))
