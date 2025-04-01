@@ -8,7 +8,8 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        user = self.instance
+        if User.objects.filter(email=value).exclude(pk=user.pk if user else None).exists():
             raise serializers.ValidationError("Email is already in use.")
         return value
     
