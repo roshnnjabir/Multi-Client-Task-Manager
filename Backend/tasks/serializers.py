@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'email': {'required': True},
             'name': {'required': True},
+            'is_staff': {'read_only': True}
         }
 
     def validate_email(self, value):
