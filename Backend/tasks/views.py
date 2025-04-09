@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -6,11 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView
-from .models import Task, User
 from rest_framework.exceptions import PermissionDenied
+from django.shortcuts import render
+import os
+
+from .models import Task, User
 from .serializers import TaskSerializer, UserSerializer
 from backend import settings
-import os
 
 def LandingPage(request):
     return render(request, 'index.html')
