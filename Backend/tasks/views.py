@@ -13,6 +13,9 @@ from .models import Task, User
 from .serializers import TaskSerializer, UserSerializer
 from backend import settings
 
+import logging
+logger = logging.getLogger(__name__)
+
 def LandingPage(request):
     return render(request, 'index.html')
 
@@ -38,7 +41,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
-        print("Cookies Found", refresh_token)
+        logger.debug(f"Cookies Found: {refresh_token}")
 
         if not refresh_token:
             return Response({"error": "No refresh token found"}, status=400)
@@ -83,7 +86,7 @@ def Upload_profile_image(request):
     user = request.user
 
     if "profile_image" not in request.FILES:
-        print("Error: No Image Provided")
+        logger.warning(f"Error: No Image Provided: {refresh_token}")
         return Response({"error": "No image provided"}, status=400)
 
     image = request.FILES["profile_image"]
