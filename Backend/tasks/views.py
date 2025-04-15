@@ -83,7 +83,7 @@ def Upload_profile_image(request):
     user = request.user
 
     if "profile_image" not in request.FILES:
-]        return Response({"error": "No image provided"}, status=400)
+        return Response({"error": "No image provided"}, status=400)
 
     image = request.FILES["profile_image"]
 
