@@ -43,7 +43,10 @@ class CustomTokenRefreshView(TokenRefreshView):
         if not refresh_token:
             return Response({"error": "No refresh token found"}, status=400)
         
-        request.data._mutable = True
+        data = request.data.copy()
+        data["refresh"] = refresh_token
+        request._full_data = data
+
         
         request.data["refresh"] = refresh_token
 
