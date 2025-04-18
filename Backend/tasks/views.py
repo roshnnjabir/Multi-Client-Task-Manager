@@ -91,6 +91,9 @@ def Upload_profile_image(request):
     if not image.name.lower().endswith(('jpg', 'jpeg', 'png')):
         return Response({"error": "Invalid image format. Only JPG, JPEG, PNG are allowed."}, status=400)
 
+    if image.size > 5 * 1024 * 1024:  # 5MB limit
+        return Response({"error": "Image file too large (max 5MB)."}, status=400)
+
     image_directory = os.path.join(settings.MEDIA_ROOT, "profile_images")
     os.makedirs(image_directory, exist_ok=True)
 
