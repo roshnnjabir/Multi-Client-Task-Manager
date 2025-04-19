@@ -128,7 +128,7 @@ class AdminUserTaskDetailView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs.get('user_id') 
         if self.request.user.is_staff and user_id:
-            return Task.objects.filter(user__id=user_id)
+            return Task.objects.filter(user__id=user_id).distinct()
 
 
 class TaskListCreateView(generics.ListCreateAPIView):
@@ -136,7 +136,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Task.objects.filter(user=self.request.user)
+        return Task.objects.filter(user=self.request.user).distinct()
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -147,7 +147,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Task.objects.filter(user=self.request.user, pk=self.kwargs['pk'])
+        return Task.objects.filter(user=self.request.user, pk=self.kwargs['pk']).distinct()
     
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
