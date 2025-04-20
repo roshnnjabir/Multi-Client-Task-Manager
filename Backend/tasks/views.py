@@ -53,6 +53,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class LogoutView(APIView):
+    http_method_names = ['post']
     def post(self, request):
         response = Response({"message": "Logged out"})
         response.delete_cookie("refresh_token")
